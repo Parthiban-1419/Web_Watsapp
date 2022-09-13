@@ -1,0 +1,33 @@
+{{page-title "AppHome"}}
+
+<div class="logo">
+    <h4>Welcome {{this.user}}</h4>
+    <i class="fa fa-list" {{action 'toggleMenu'}}></i>
+    {{#if this.menu}}
+        <div class="menu">
+            <LinkTo @route="log-out" class="logOut">Log Out</LinkTo>
+        </div>
+    {{/if}}
+</div>
+<div class="search">
+    <i class="fa fa-search" {{action 'searchUser'}}></i>
+    <input type="text" placeholder="search name" id="search-box">
+</div>
+<div class="contacts">
+    {{#each this.datas as |json|}}
+        <div class="name" {{on "click" (fn this.getChat  json.index )}} id={{json.index}}>
+            <span class="profile"></span> 
+            <p id="name">{{json.friend}}</p> 
+        </div>
+    {{/each}}
+</div>
+<div class="container">
+</div>
+{{#if this.keypad}}
+    <div class="keypad"><br><br>
+        <center>
+            <input type="text" class="keyboard" id="message" placeholder="Type a message..." {{on "keypress" (fn this.typing this)}}>
+            <i class="fa fa-send"  {{action 'sendMessage'}}></i>
+        </center>
+    </div>
+{{/if}}

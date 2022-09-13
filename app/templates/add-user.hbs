@@ -1,0 +1,26 @@
+{{page-title "AddUser"}}
+
+{{page-title "AddUser"}}
+<div id="body"><br><br>
+    <center>
+        <h3 style="color:white">Create Account</h3><br>
+        <div class="add-user"><br><br>
+            <center>
+                <ul>
+                    <li><input type="number" id="number" placeholder="Phone number"><br><br></li>
+
+                    <li><input type="text" id="user" placeholder="Name"><br><br></li>
+
+                    <li><input type="text" id="about" placeholder="about"><br><br></li>
+
+                    <li><input type="password" id="password" placeholder="Passward"><br><br></li>
+
+                    <li><input type="password" id="cPassword" placeholder="Conform password"><br><br></li>
+                </ul>
+                <button type="button" class="button" {{action "addUser"}} type="button">Create</button><br><br>
+
+                Exixting use? <LinkTo @route="index">Log in</LinkTo>
+            </center>
+        </div>
+    </center>
+</div>
