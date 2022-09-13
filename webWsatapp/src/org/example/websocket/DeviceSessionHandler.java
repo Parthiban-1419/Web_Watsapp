@@ -81,9 +81,11 @@ public class DeviceSessionHandler {
     
     public JSONObject getChat(String user) throws ServletException, IOException {
     	int count = 0; 
+    	boolean account = true;
+    	String userName = null, profile;
 		Connection con = null;
-		Statement st = null;
-		ResultSet result = null;
+		Statement st = null, st1 = null;
+		ResultSet result = null, r = null;
 		JSONObject json = new JSONObject(), jChat = new JSONObject();
 		JSONArray jArray = new JSONArray();
 		
@@ -91,14 +93,40 @@ public class DeviceSessionHandler {
 			Class.forName("org.postgresql.Driver");
 	        con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/watsapp", "postgres", "Parthi12345*");
 	        st = con.createStatement(); 
-	        result = st.executeQuery("SELECT DISTINCT(sender) FROM chats WHERE receiver = '" + user + "' UNION SELECT DISTINCT(receiver) FROM chats WHERE sender='" + user + "'");
+	        st1 = con.createStatement(); 
+	        
+	        
+	       
+	        result = st.executeQuery("SELECT * FROM user_detail WHERE number='" + user + "'");
+	        result.next();
+	        userName = result.getString("name");
 	        
 	        json.put("action", "chatHistory");
+	        json.put("userName", userName);
+	        json.put("number", user);
+	        json.put("profile", result.getObject("profile"));
+//	        result = st.executeQuery("SELECT DISTINCT(sender) FROM chat_detail WHERE receiver = '" + user + "' UNION SELECT DISTINCT(receiver) FROM chat_detail WHERE sender='" + user + "'");
+	        result = st.executeQuery("SELECT * FROM f_" + user + " INNER JOIN user_detail ON f_" + user + ".f_number = user_detail.number");
+	        
+	        
 	        while(result.next()) {
+
+	        	profile = null;
+	        	r = st1.executeQuery("SELECT * FROM user_detail WHERE number = '" + result.getString("f_number") + "'");
+	        	if(r.next()) {
+	        		account = true;
+	        		profile = (String) r.getObject("profile");
+	        	}
+	        	else
+	        		account = false;
+	        	
 	        	jChat = new JSONObject();
 	        	jChat.put("index" , count++);
-	        	jChat.put("friend" , result.getString("sender"));
-	        	jChat.put("chat", getMessages(user, result.getString("sender")));
+	        	jChat.put("profile", profile);
+	        	jChat.put("f_number" , result.getString("f_number"));
+	        	jChat.put("friend" , result.getString("f_name"));
+	        	jChat.put("user", account);
+	        	jChat.put("chat", getMessages(user, result.getString("f_number")));
 	        	jArray.add(jChat);
 	        }
 //	        out.print(jArray);
@@ -107,13 +135,15 @@ public class DeviceSessionHandler {
 	        con.close();
 	        result.close();
 		}
-		catch(Exception e) {}
+		catch(Exception e) {
+			System.out.print(e);
+		}
 		
 		return json;
 		
 	}
 	
-	private JSONArray getMessages(String user, String other) throws SQLException, ClassNotFoundException {
+	private JSONArray getMessages(String user, String f_number) throws SQLException, ClassNotFoundException {
 		JSONObject json = new JSONObject();
 		JSONArray jArray = new JSONArray();
 		Connection con = null;
@@ -123,7 +153,7 @@ public class DeviceSessionHandler {
 		Class.forName("org.postgresql.Driver");
         con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/watsapp", "postgres", "Parthi12345*");
         st = con.createStatement(); 
-        result = st.executeQuery("SELECT * FROM chats WHERE (sender = '" + other + "' AND receiver = '"  + user + "') OR (sender = '"  + user + "' AND receiver = '" + other + "')");
+        result = st.executeQuery("SELECT * FROM chat_detail WHERE (sender = '" + f_number + "' AND receiver = '"  + user + "') OR (sender = '"  + user + "' AND receiver = '" + f_number + "')");
         
         while(result.next()) {
         	json = new JSONObject();
@@ -133,7 +163,9 @@ public class DeviceSessionHandler {
         	json.put("receiver", result.getObject("receiver"));
         	json.put("message", result.getObject("message"));
         	json.put("sent_time", result.getObject("sent_time"));
-        	json.put("delivered_time", result.getObject("delivered_time"));
+        	json.put("delivered", result.getObject("delivered"));
+        	json.put("delivered_time", result.getObject("deliver_time"));
+        	json.put("read", result.getObject("read"));
         	json.put("read_time", result.getObject("read_time"));
         	
         	jArray.add(json);
@@ -147,12 +179,18 @@ public class DeviceSessionHandler {
 	void storeMessage(JSONObject json) throws ClassNotFoundException, SQLException {
 		Connection con = null;
 		Statement st = null;
+		ResultSet r = null;
 		
 		Class.forName("org.postgresql.Driver");
         con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/watsapp", "postgres", "Parthi12345*");
         st = con.createStatement(); 
-        st.executeUpdate("INSERT INTO chats(sender, receiver, message, sent_time) VALUES('" + json.get("sender") + "', '" + json.get("receiver") + "', '" + json.get("message") + "', " + json.get("sent_time") + ")");
-        
+        st.executeUpdate("INSERT INTO chat_detail(sender, receiver, message, sent_time) VALUES('" + json.get("sender") + "', '" + json.get("receiver") + "', '" + json.get("message") + "', " + json.get("sent_time") + ")");
+        r = st.executeQuery("SELECT * FROM f_" + json.get("receiver") + " WHERE f_number='" + json.get("sender") + "'");
+        System.out.println("SELECT * FROM f_" + json.get("receiver") + " WHERE f_number='" + json.get("sender") + "'");
+        if(!r.next()) {
+        	System.out.println("not found");
+        	st.executeUpdate("INSERT INTO f_" + json.get("receiver") + "(f_number, f_name) VALUES('" + json.get("sender") + "', '" + json.get("sender") + "')");
+        }
 	}
 	
 	void createNewChat(String user, String friend) throws ClassNotFoundException, SQLException {
@@ -160,16 +198,19 @@ public class DeviceSessionHandler {
 		Statement st = null;
 		ResultSet result = null;
 		JSONObject json = new JSONObject();
+		String f_number = null;
 		
 		Class.forName("org.postgresql.Driver");
         con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/watsapp", "postgres", "Parthi12345*");
         st = con.createStatement(); 
         
-        result = st.executeQuery("SELECT user_id FROM users WHERE user_id='" + friend + "'");
-        
+        result = st.executeQuery("SELECT f_number FROM f_" + user + " WHERE f_name='" + friend + "'");
         if(result.next()) {
+        	f_number = result.getString(1);
+        	
         	json.put("action", "newChat");
-        	json.put("friend", friend);
+        	json.put("f_number", f_number);
+        	json.put("f_name", friend);
         }
         else
         	json.put("action", "friendNotFound");

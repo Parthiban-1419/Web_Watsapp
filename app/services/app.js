@@ -1,6 +1,8 @@
 import Service from '@ember/service';
-import { tracked } from '@glimmer/tracking';
 
 export default class AppService extends Service {
-  @tracked type = false;
+  user = null;
+  number = null;
+  profile = null;
+  host = 'localhost';//'192.168.245.15';
 }

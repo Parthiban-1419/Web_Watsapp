@@ -20,4 +20,16 @@ export default class TestController extends Controller {
       console.log(req.getRemoteUser);
     };
   }
+
+  @action
+  btn() {
+    let self = this;
+    $('.test').html('<button>click</button>');
+    $('button').on('click', function () {
+      self.print();
+    });
+  }
+  print() {
+    console.log('printing...');
+  }
 }

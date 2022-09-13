@@ -23,6 +23,13 @@ input{
     border-radius: 30px;
     background-color: orange;
 }
+.addContact{
+    width: 330px;
+    height: 180px;
+    border-radius: 30px;
+    background-color: orange;
+    box-shadow: 2px 2px grey;
+}
 .menu{
     background-color: white;
     border: none;
@@ -30,8 +37,8 @@ input{
     width: 100px;
     height: 100px;
     position: absolute;
-    top: 60px;    
-    left: 105px;
+    top: 55px;    
+    left: 110px;
     z-index: 500;
 }
 .fa-list{
@@ -104,7 +111,7 @@ input{
     border-radius: 10px;
     width: 190px;
     position: fixed;
-    top: 85px;
+    top: 79px;
     left: 30px;
 }
 .name{
@@ -267,7 +274,7 @@ p {
     text-align: left;
 }
 
-.button {
+button {
     display: inline;
     color: #fff;
     background-color: green;

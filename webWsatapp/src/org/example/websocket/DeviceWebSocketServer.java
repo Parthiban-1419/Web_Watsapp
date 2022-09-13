@@ -62,14 +62,15 @@ public class DeviceWebSocketServer {
             
             if("newMessage".equals((String)jsonMessage.get("action"))){
             	System.out.println("\njson :  " + jsonMessage.get("chat"));
-            	if(sessionHandler.sessions.containsKey(((JSONObject)jsonMessage.get("chat")).get("receiver")))
-            		sessionHandler.sendToSession(sessionHandler.sessions.get(((JSONObject)jsonMessage.get("chat")).get("receiver")), jsonMessage);
-            	System.out.print("Storing...");
             	sessionHandler.storeMessage((JSONObject) jsonMessage.get("chat"));
+            	if(sessionHandler.sessions.containsKey(((JSONObject)(jsonMessage.get("chat"))).get("receiver")))
+            		sessionHandler.sendToSession(sessionHandler.sessions.get(((JSONObject)jsonMessage.get("chat")).get("receiver")), jsonMessage);
+            	
+            	
             }
             
             if("status".equals((String)jsonMessage.get("action"))){
-            	if(sessionHandler.sessions.containsKey(((JSONObject)jsonMessage).get("friend")))
+            	if(sessionHandler.sessions.containsKey(jsonMessage.get("friend")))
             		sessionHandler.sendToSession(sessionHandler.sessions.get(jsonMessage.get("friend")), jsonMessage);            
             }
             

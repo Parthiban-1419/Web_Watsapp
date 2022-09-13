@@ -13,4 +13,7 @@ Router.map(function () {
   this.route('add-user');
   this.route('Sample');
   this.route('webWsatapp');
+  this.route('add-contact');
+  this.route('update-user');
+  this.route('my-account');
 });
